@@ -16,7 +16,11 @@
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Dashboard
+                                    Painel de Controle
+                                </NavLink>
+                                
+                                <NavLink :href="route('chat.index')" :active="route().current('chat.index')">
+                                    Bate-papo
                                 </NavLink>
                             </div>
                         </div>

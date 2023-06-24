@@ -16,7 +16,19 @@
     </AuthenticatedLayout>
 </template>
 
-<script setup>
+<script>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+
+export default {
+    props: {
+        title: String
+    },
+    components: {
+        AuthenticatedLayout,
+    },
+    created() {
+
+    },
+}
 </script>

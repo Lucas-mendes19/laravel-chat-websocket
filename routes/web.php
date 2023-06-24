@@ -1,6 +1,10 @@
 <?php
 
+use App\Events\MessageSentEvent;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ProfileController;
+use App\Jobs\SendMessage;
+use App\Models\Message;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -16,11 +20,7 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/home', function () {
-    return Inertia::render('Home', [
-        'title' => 'testando'
-    ]);
-});
+Route::resource('chat', ChatController::class);
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
