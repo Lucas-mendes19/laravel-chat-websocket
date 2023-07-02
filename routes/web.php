@@ -5,6 +5,9 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ProfileController;
 use App\Jobs\SendMessage;
 use App\Models\Message;
+use App\Models\Room;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -22,6 +25,8 @@ use Inertia\Inertia;
 
 Route::resource('chat', ChatController::class);
 
+Route::post('/message', [ChatController::class, 'sendMessage']);
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -32,7 +37,17 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $rooms = Room::query()
+        ->whereHas('users', function (Builder $b) {
+            return $b->where('user_id', '=', auth()->id());
+        })
+        ->with('users', function ($b) {
+            return $b->where('user_id', '!=', auth()->id());
+        });
+
+    return Inertia::render('Dashboard', [
+        'rooms' => $rooms->get()
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

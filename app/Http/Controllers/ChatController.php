@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSentEvent;
+use App\Models\Message;
 use App\Models\Room;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,29 +16,37 @@ class ChatController extends Controller
     public function __construct() {
         $this->middleware(['auth', 'verified']);
     }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // MessageSentEvent::dispatch('ok');
-
-        $room = Room::query()
+        $room = Room::find($request->id)
             ->whereHas('users', function (Builder $b) {
                 return $b->where('user_id', '=', auth()->id());
             })
             ->with('users', function ($b) {
                 return $b->where('user_id', '!=', auth()->id());
-            });
+            })
+            ->with('messages');
 
-        dd($room->get());
+            dd($room->first());
+        // User::whereNot('id', auth()->id())->get()
 
         return Inertia::render('Chat', [
-            'users' => User::whereNot('id', auth()->id())->get()
+            'room' => $room->first()
         ]);
     }
 
-    public function createRoom($id)
+    public function sendMessage(Request $request)
+    {
+        MessageSentEvent::dispatch($request->message);
+
+        return 'ok';
+    }
+
+    public function createRoom(int $id)
     {
         $room = Room::query()->create();
         $room ->users()->attach([$id, auth()->id()]);

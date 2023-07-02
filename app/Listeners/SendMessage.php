@@ -23,7 +23,8 @@ class SendMessage
     public function handle(MessageSentEvent $event): void
     {
         Message::create([
-            'message' => $event->message
+            'message' => $event->message,
+            'user_id' => auth()->id()
         ]);
     }
 }
