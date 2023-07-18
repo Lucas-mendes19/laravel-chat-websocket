@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Room;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -18,7 +19,7 @@ class MessageSentEvent implements ShouldBroadcast
      * Create a new event instance.
      */
     public function __construct(
-        public string $message
+        protected int $roomId,
     ) { }
 
     /**
@@ -29,12 +30,7 @@ class MessageSentEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('message'),
+            new PrivateChannel('room.' . $this->roomId),
         ];
-    }
-
-    public function broadcastAs()
-    {
-        return 'testando';
     }
 }

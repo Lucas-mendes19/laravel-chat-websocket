@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Symfony\Component\Mailer\Event\MessageEvent;
 
 class ChatController extends Controller
 {
@@ -29,21 +30,27 @@ class ChatController extends Controller
             ->with('users', function ($b) {
                 return $b->where('user_id', '!=', auth()->id());
             })
-            ->with('messages');
-
-            dd($room->first());
-        // User::whereNot('id', auth()->id())->get()
+            ->with('messages')
+            ->with('messages', function ($b) {
+                return $b->with('user');
+            });;
 
         return Inertia::render('Chat', [
+            'users' => User::where('id', '!=', auth()->id())->get(),
             'room' => $room->first()
         ]);
     }
 
     public function sendMessage(Request $request)
     {
-        MessageSentEvent::dispatch($request->message);
+        Message::create([
+            'room_id' => $request->roomId,
+            'message' => $request->message,
+            'user_id' => auth()->id()
+        ])->get();
 
-        return 'ok';
+
+        MessageSentEvent::dispatch($request->roomId);
     }
 
     public function createRoom(int $id)

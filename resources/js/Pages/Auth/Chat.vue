@@ -10,15 +10,15 @@
                     <div class="flex h-full">
 
                         <!-- Left -->
-                        <div class="w-1/3 border flex flex-col">
+                        <!-- <div class="w-1/3 border flex flex-col"> -->
                             <!-- Search -->
-                            <div class="py-2 px-2 dark:bg-gray-800">
+                            <!-- <div class="py-2 px-2 dark:bg-gray-800">
                                 <input type="text" class="w-full px-2 py-2 text-sm rounded"
                                     placeholder="Search or start new chat" />
-                            </div>
+                            </div> -->
 
                             <!-- Contacts -->
-                            <div class="dark:bg-gray-800 shadow flex-1 overflow-auto">
+                            <!-- <div class="dark:bg-gray-800 shadow flex-1 overflow-auto">
                                 <div v-for="user in users" :key="user.id"
                                     class="px-2 flex items-center hover:bg-grey-lighter cursor-pointer">
                                     
@@ -26,18 +26,18 @@
                                         <div class="flex items-bottom justify-between">
                                             <p class="dark:text-gray-200">
                                                 {{ user.name }}
-                                            </p>
-                                            <p class="text-xs dark:text-gray-200">
+                                            </p> -->
+                                            <!-- <p class="text-xs dark:text-gray-200">
                                                 12:45 pm
-                                            </p>
-                                        </div>
+                                            </p> -->
+                                        <!-- </div> -->
                                         <!-- <p class="dark:text-gray-200 mt-1 text-sm">
                                             I'll be back
                                         </p> -->
-                                    </div>
+                                    <!-- </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Right -->
                         <div class="w-2/3 border flex flex-col">
@@ -47,17 +47,17 @@
                                 <div class="flex items-center">
                                     <div class="ml-4">
                                         <p class="dark:text-gray-200">
-                                            Sala - {{ room.id }}
+                                            Sala 01
                                         </p>
                                         <p class="dark:text-gray-200 text-xs mt-1">
-                                            {{ listUsers() }}
+                                            Andrés, Tom, Harrison, Arnold, Sylvester
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Messages -->
-                            <div ref="scrollContainer" class="flex-1 overflow-auto dark:bg-gray-800 shadow">
+                            <div class="flex-1 overflow-auto dark:bg-gray-800 shadow">
                                 <div v-for="message in room.messages" :key="message.id" class="py-2 px-3">
                                     <div v-if="message.user_id === $page.props.auth.user.id" class="flex justify-end mb-2">
                                         <div class="rounded py-2 px-3" style="background-color: #E2F7CB">
@@ -91,10 +91,7 @@
                             <div class="dark:bg-gray-800 px-4 py-4 flex items-center border-t border-grey-lighter">
                                 <div class="flex-1 mx-4">
                                     <input v-model="form.message" class="w-full border rounded px-2 py-2" type="text" />
-
-                                    <button @click="sendMessage()" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-                                        Enviar
-                                    </button>
+                                    <button @click="sendMessage()" type="submit">Submit</button>
                                 </div>
                             </div>
                         </div>
@@ -110,8 +107,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 export default {
     props: {
-        room: Object,
-        users: Object
+        room: Object
     },
     components: {
         AuthenticatedLayout,
@@ -125,37 +121,26 @@ export default {
     },
     methods: {
         sendMessage() {
+            console.log(123213)
             axios.post('/message', {
                 roomId: this.room.id,
                 message: this.form.message
             })
                 .then((res) => {
-
+                    // console.log(res.data);
                 });
         },
-        listUsers() {
-            const listName = this.room.users.map(user => user.name);
-            return listName.join(', ');
-        },
-        scrollToEnd() {
-            this.$nextTick(() => {
-                const scrollContainer = this.$refs.scrollContainer;
-                scrollContainer.scrollTop = scrollContainer.scrollHeight;
-            });
-        }
     },
 
     created() {
+        console.log('wsdw');
         const channel = Echo.private('room.' + this.room.id);
-        console.log(this.room);
+
         channel.subscribed(() => {
             console.log('inscrito');
         }).listen('MessageSentEvent', (e) => {
             axios.get(`/api/room/${this.room.id}`)
-                .then((res) => {
-                    this.room.messages = res.data.data.messages;
-                    this.scrollToEnd();
-                });
+                .then((res) => this.room.messages = res.data.data.messages);
         });
     },
 }
