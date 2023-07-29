@@ -20,4 +20,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::apiResource('/room', RoomController::class)->only(['show']);
+Route::apiResource('/room', RoomController::class)->only(['show', 'store']);

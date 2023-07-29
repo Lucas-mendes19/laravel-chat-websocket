@@ -3,6 +3,7 @@
 use App\Events\MessageSentEvent;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoomController;
 use App\Jobs\SendMessage;
 use App\Models\Message;
 use App\Models\Room;
@@ -23,9 +24,9 @@ use Inertia\Inertia;
 |
 */
 
-Route::resource('chat', ChatController::class);
-
 Route::post('/message', [ChatController::class, 'sendMessage']);
+
+Route::middleware('auth:sanctum')->resource('/room', RoomController::class)->only(['show', 'store']);
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -36,19 +37,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    $rooms = Room::query()
-        ->whereHas('users', function (Builder $b) {
-            return $b->where('user_id', '=', auth()->id());
-        })
-        ->with('users', function ($b) {
-            return $b->where('user_id', '!=', auth()->id());
-        });
-
-    return Inertia::render('Dashboard', [
-        'rooms' => $rooms->get()
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [ChatController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

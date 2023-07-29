@@ -18,10 +18,6 @@
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Painel de Controle
                                 </NavLink>
-                                
-                                <NavLink :href="route('chat.index')" :active="route().current('chat.index')">
-                                    Bate-papo
-                                </NavLink>
                             </div>
                         </div>
 

@@ -9,14 +9,7 @@
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <ul v-for="room in rooms" :key="room.id"
-                        class="max-w-md space-y-1 text-gray-500 list-none list-inside dark:text-gray-400">
-                        <li>
-                            <Link :href="route('chat.index', { id: room.id })">
-                                {{ room.users[0].name }}
-                            </Link>
-                        </li>
-                    </ul>
+
                 </div>
             </div>
         </div>
