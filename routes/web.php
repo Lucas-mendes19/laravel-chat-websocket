@@ -26,7 +26,7 @@ use Inertia\Inertia;
 
 Route::post('/message', [ChatController::class, 'sendMessage']);
 
-Route::middleware('auth:sanctum')->resource('/room', RoomController::class)->only(['show', 'store']);
+Route::middleware('auth:sanctum')->resource('/room', RoomController::class)->only(['show', 'store', 'destroy', 'index']);
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [

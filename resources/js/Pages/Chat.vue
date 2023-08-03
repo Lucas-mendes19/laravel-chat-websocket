@@ -49,7 +49,7 @@
                         <div class="w-2/3 border flex flex-col">
 
                             <!-- Header -->
-                            <div
+                            <div v-if="room.id"
                                 class="py-2 px-3 dark:bg-gray-800 flex flex-row justify-between items-center border-b border-grey-lighter">
                                 <div class="flex items-center w-full">
                                     <div class="ml-4 w-full">
@@ -75,7 +75,7 @@
                                                 </template>
 
                                                 <template #content>
-                                                    <DropdownLink href="#">Sair do grupo</DropdownLink>
+                                                    <DropdownLink @click="leaveTheGroup()" href="#">Sair do grupo</DropdownLink>
                                                 </template>
                                             </Dropdown>
                                         </div>
@@ -96,7 +96,7 @@
                                                 {{ message.message }}
                                             </p>
                                             <p class="text-right text-xs text-grey-dark mt-1">
-                                                12:45 pm
+                                                {{ dateFormat(message.created_at) }}
                                             </p>
                                         </div>
                                     </div>
@@ -110,7 +110,7 @@
                                                 {{ message.message }}
                                             </p>
                                             <p class="text-right text-xs text-grey-dark mt-1">
-                                                12:45 pm
+                                                {{ dateFormat(message.created_at) }}
                                             </p>
                                         </div>
                                     </div>
@@ -119,7 +119,7 @@
                             </div>
 
                             <!-- Input -->
-                            <form @submit.prevent="sendMessage()" class="dark:bg-gray-800 px-4 py-4 flex items-center border-t border-grey-lighter">
+                            <form v-if="room.id" @submit.prevent="sendMessage()" class="dark:bg-gray-800 px-4 py-4 flex items-center border-t border-grey-lighter">
                                 <div class="text-white hover:text-blue-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                                         <path opacity=".45" fill="currentColor"
@@ -155,6 +155,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ModalCreateRoom from '@/Components/ModalCreateRoom.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
+import { useForm } from '@inertiajs/vue3';
+import moment from 'moment';
 
 export default {
     props: {
@@ -177,18 +179,18 @@ export default {
         }
     },
     methods: {
-        async findRoom(id) {
-            const response = await axios.get(`/room/${id}`);
-            return response.data;
-        },
         sendMessage() {
             axios.post('/message', {
                 roomId: this.room.id,
                 message: this.form.message
             });
         },
-        listUsers(users) {
-            const listName = this.users.map(user => user.name);
+        listUsers(users = null) {
+            if (users === undefined || users === null) {
+                return '';
+            }
+
+            const listName = users.map(user => user.name);
             return listName.join(', ');
         },
         scrollToEnd() {
@@ -198,8 +200,9 @@ export default {
             });
         },
         async enterTheRoom(id) {
-            this.room = (await this.findRoom(id)).data;
-
+            const response = await axios.get(`/room/${id}`);
+            
+            this.room = response.data.data;
             const channel = Echo.private('room.' + this.room.id);
 
             channel.subscribed(() => {
@@ -211,17 +214,39 @@ export default {
                         this.scrollToEnd();
                     });
             });
+        },
+        leaveTheGroup() {
+            let data = {};
+            if (this.room.users.length <= 1) {
+                data.user = this.$page.props.auth.user.id;
+            }
+            
+            const id = this.rooms[0].id;
+            useForm(data).delete(`/room/${id}`, {
+                onSuccess: () => {
+                    if (this.rooms[0] !== undefined) {
+                        this.enterTheRoom(this.rooms[0].id);
+                        return;
+                    }
+
+                    this.room = {};
+                }
+            });
+        },
+        dateFormat(date) {
+            return moment(date).fromNow();
         }
     },
     async created() {
         try {
-            await this.enterTheRoom(this.rooms[0].id);
-            this.scrollToEnd()
+            if (this.rooms[0] !== undefined) {
+                this.enterTheRoom(this.rooms[0].id);
+            }
+
+            this.scrollToEnd();
         } catch (error) {
             console.log(error);
         }
     }
 }
 </script>
-
-<style></style>
