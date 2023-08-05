@@ -17,7 +17,10 @@ use Illuminate\Support\Facades\DB;
 */
 
 Broadcast::channel('room.{roomId}', function ($user, $roomId) {
-    // return DB::selectOne('select count(0) as count from room_user where room_id = ? and user_id = ?', [$roomId, $user->id])
-    //     ->count > 0;
-    return true;
+    return DB::selectOne('select count(0) as count from room_user where room_id = ? and user_id = ?', [$roomId, $user->id])
+        ->count > 0;
+});
+
+Broadcast::channel('room-created.{userId}', function ($user, int $userId) {
+    return $user->id === $userId;
 });

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\RoomCreatedEvent;
+use App\Http\Requests\RoomStoreRequest;
 use App\Models\Room;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redis;
 
 class RoomController extends Controller
 {
@@ -44,28 +45,27 @@ class RoomController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(RoomStoreRequest $request)
     {
-        $validated = $request->validate([
-            'checkedUsers' => 'required',
-            'name' => 'required',
-        ]);
-        
-        $validated['checkedUsers'][] = auth()->id();
+        $users = $request['checkedUsers'];
+        $users[] = auth()->id();
 
         $room = Room::query()->create([
-            'name' => $validated['name']
+            'name' => $request['name']
         ]);
 
-        $room->users()->attach($validated['checkedUsers']);
+        $room->users()->attach($users);
         
+        RoomCreatedEvent::dispatch($users);
+
         return to_route('dashboard', ['id' => $room->id]);
     }
 
     public function destroy(Room $room, Request $request)
     {
         if ($request->has('user')) {
-            return $room->users()->detach($request->user);
+            $room->users()->detach($request->user);
+            return;
         }
 
         $room->delete();

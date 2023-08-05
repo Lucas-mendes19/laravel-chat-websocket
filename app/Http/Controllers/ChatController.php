@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageSentEvent;
+use App\Http\Requests\MessageSendRequest;
 use App\Models\Message;
 use App\Models\Room;
 use App\Models\User;
@@ -35,15 +36,15 @@ class ChatController extends Controller
         ]);
     }
 
-    public function sendMessage(Request $request)
+    public function sendMessage(MessageSendRequest $request)
     {
         Message::create([
-            'room_id' => $request->roomId,
+            'room_id' => $request->room_id,
             'message' => $request->message,
             'user_id' => auth()->id()
         ])->get();
 
-        MessageSentEvent::dispatch($request->roomId);
+        MessageSentEvent::dispatch($request->room_id);
         
         return response()->json('Menssagem enviada com sucesso.');
     }
